@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('card_number');
             $table->date("exp_time");
             $table->string('type_pay');
-            $table->integer('code-card');
+            $table->integer('code_card');
             $table->double('price', 8, 2);
             $table->timestamps();
         });
