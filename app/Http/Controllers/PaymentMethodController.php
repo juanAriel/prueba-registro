@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
-
+use Stripe\Stripe;
+use Stripe\PaymentIntent;
 /**
  * Class PaymentMethodController
  * @package App\Http\Controllers
@@ -43,12 +44,29 @@ class PaymentMethodController extends Controller
      */
     public function store(Request $request)
     {
-        request()->validate(PaymentMethod::$rules);
+        $request->validate(PaymentMethod::$rules);
 
-        $paymentMethod = PaymentMethod::create($request->all());
+        // Configura la clave secreta de Stripe
+        Stripe::setApiKey(env('STRIPE_SECRET'));
 
-        return redirect()->route('payment_methods.index')
-            ->with('success', 'PaymentMethod created successfully.');
+        try {
+            // Crea un intento de pago en Stripe
+            $paymentIntent = PaymentIntent::create([
+                'amount' => $request->price * 100, // La cantidad se especifica en centavos
+                'currency' => 'usd', // Cambia a tu moneda preferida si es diferente
+                'payment_method_types' => ['card'],
+                'description' => 'Compra en tu aplicación', // Descripción del pago
+            ]);
+
+            // Si el pago se confirma, se redirecciona a la vista de índice con un mensaje de éxito
+            return redirect()->route('payment_methods.index')
+                ->with('success', 'Pago realizado exitosamente.');
+        } catch (\Exception $e) {
+            // Si hay un error durante el proceso de pago, se redirecciona de vuelta al formulario de creación con un mensaje de error
+            return redirect()->back()
+                ->with('error', $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
