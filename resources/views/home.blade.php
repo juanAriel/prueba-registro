@@ -115,24 +115,29 @@
                                 <input type="tel" class="form-control mb-3" name="phone" required>
                             </div>
                             {{-- seccion select plan --}}
-<div class="form-section">
-    <div class="row">
-        @foreach ($plans as $plan)
-        <div class="col-md-4">
-            <div class="card border-primary mb-3" style="cursor: pointer;" onclick="toggleCheckbox(this)">
-                <div class="card-header">{{ $plan->name }}</div>
-                <div class="card-body text-primary d-flex flex-column  justify-content-center align-items-center">
-                    <h4 class="card-text">{{ $plan->description }}</h4>
-                    <h2 class="card-text mb-5">${{ $plan->price }}</h2>
-                    <input type="checkbox" class="form-check-input mt-5 p-2" name="plan[]" value="{{ $plan->id }}">
-                </div>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</div>
+                            <div class="form-section">
+                                <div class="row">
+                                    @foreach ($plans as $plan)
+                                        <div class="col-md-4">
+                                            <div class="card border-primary mb-3" style="cursor: pointer;"
+                                                onclick="toggleRadio(this)">
 
-                            
+                                                <div class="card-header">{{ $plan->name }}</div>
+                                                <div
+                                                    class="card-body text-primary d-flex flex-column  justify-content-center align-items-center">
+                                                    <h4 class="card-text">{{ $plan->description }}</h4>
+                                                    <h2 class="card-text mb-5">${{ $plan->price }}</h2>
+                                                    <input type="radio" class="form-check-input mt-5 p-2 plan-radio"
+                                                        name="selected_plan" value="{{ $plan->id }}"
+                                                        data-price="{{ $plan->price }}">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <input type="hidden" name="selected_plan_price" id="selected_plan_price" value="">
+                            {{-- seccion pay --}}
                             <div class="form-section">
                                 <label for="">Number Card:</label>
                                 <input type="text" class="form-control mb-3" name="card_number" required>
@@ -156,9 +161,12 @@
                 </div>
             </div>
         </div>
-
-
         <script>
+            function updatePrice(element) {
+                var selectedPlanPrice = $(element).find('input[type="radio"]').data('price');
+                $('input[name="price"]').val(selectedPlanPrice);
+            }
+
             $(function() {
                 var $sections = $('.form-section');
 
@@ -180,6 +188,10 @@
                     navigateTo(curIndex() - 1);
                 });
                 $('.form-navigation .next').click(function() {
+                    var selectedPlan = $('input[name="selected_plan"]:checked');
+                    if (selectedPlan.length) {
+                        updatePrice(selectedPlan.parent());
+                    }
                     $('.employee-form').parsley().whenValidate({
                         group: 'block-' + curIndex()
                     }).done(function() {
@@ -191,12 +203,6 @@
                 });
                 navigateTo(0);
             });
-        </script>
-        <script>
-            function toggleCheckbox(element) {
-                var checkbox = $(element).find('input[type="checkbox"]');
-                checkbox.prop('checked', !checkbox.prop('checked'));
-            }
         </script>
     </div>
 </body>
